@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import CustomerHeader from "../_components/CustomerHeader";
 import Footer from "../_components/Footer";
 import { DELIVERY_CHARGES, TAX } from "../lib/constant";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 const Page = () => {
     const [cartStorage, setCartStorage] = useState([]);
@@ -10,7 +10,7 @@ const Page = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Check if we are in the browser
+        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
             // Retrieve cart data from local storage
             const cartData = JSON.parse(localStorage.getItem('cart'));
@@ -23,11 +23,8 @@ const Page = () => {
         }
     }, []);
 
-    useEffect(() => {
-        console.log("Total updated:", total);
-    }, [total]);
-
     const orderNow = () => {
+        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
             if (JSON.parse(localStorage.getItem('user'))) {
                 router.push('/order');
@@ -38,6 +35,7 @@ const Page = () => {
     }
 
     const removeFromCart = (id) => {
+        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
             // Remove item from cartStorage
             const updatedCart = cartStorage.filter(item => item._id !== id);
