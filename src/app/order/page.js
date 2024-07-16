@@ -1,4 +1,3 @@
-'use client'
 import { useState, useEffect } from "react";
 import CustomerHeader from "../_components/CustomerHeader";
 import Footer from "../_components/Footer";
@@ -11,20 +10,21 @@ const Page = () => {
     const router = useRouter();
 
     useEffect(() => {
+        // Check if we are in the browser
         if (typeof window !== 'undefined') {
             // Retrieve cart data from local storage
             const cartData = JSON.parse(localStorage.getItem('cart'));
             if (cartData) {
                 setCartStorage(cartData);
                 // Calculate total price
-                const calculatedTotal = cartData.length === 1 ? cartData[0].price : cartData.reduce((a, b) => a.price + b.price, 0);
+                const calculatedTotal = cartData.reduce((acc, item) => acc + item.price, 0);
                 setTotal(calculatedTotal);
             }
         }
     }, []);
 
     useEffect(() => {
-        console.log(total);
+        console.log("Total updated:", total);
     }, [total]);
 
     const orderNow = () => {
@@ -45,7 +45,7 @@ const Page = () => {
             localStorage.setItem('cart', JSON.stringify(updatedCart));
 
             // Recalculate total
-            const updatedTotal = updatedCart.length === 1 ? updatedCart[0].price : updatedCart.reduce((a, b) => a.price + b.price, 0);
+            const updatedTotal = updatedCart.reduce((acc, item) => acc + item.price, 0);
             setTotal(updatedTotal);
         }
     }
