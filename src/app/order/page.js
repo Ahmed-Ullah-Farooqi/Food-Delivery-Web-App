@@ -3,20 +3,17 @@ import CustomerHeader from "../_components/CustomerHeader";
 import Footer from "../_components/Footer";
 import { DELIVERY_CHARGES, TAX } from "../lib/constant";
 import { useRouter } from "next/router";
-
+// here some changes
 const Page = () => {
     const [cartStorage, setCartStorage] = useState([]);
     const [total, setTotal] = useState(0);
     const router = useRouter();
 
     useEffect(() => {
-        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
-            // Retrieve cart data from local storage
             const cartData = JSON.parse(localStorage.getItem('cart'));
             if (cartData) {
                 setCartStorage(cartData);
-                // Calculate total price
                 const calculatedTotal = cartData.reduce((acc, item) => acc + item.price, 0);
                 setTotal(calculatedTotal);
             }
@@ -24,7 +21,6 @@ const Page = () => {
     }, []);
 
     const orderNow = () => {
-        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
             if (JSON.parse(localStorage.getItem('user'))) {
                 router.push('/order');
@@ -35,14 +31,11 @@ const Page = () => {
     }
 
     const removeFromCart = (id) => {
-        // Check if we are in the browser environment
         if (typeof window !== 'undefined') {
-            // Remove item from cartStorage
             const updatedCart = cartStorage.filter(item => item._id !== id);
             setCartStorage(updatedCart);
             localStorage.setItem('cart', JSON.stringify(updatedCart));
 
-            // Recalculate total
             const updatedTotal = updatedCart.reduce((acc, item) => acc + item.price, 0);
             setTotal(updatedTotal);
         }
@@ -59,7 +52,7 @@ const Page = () => {
                             <div className="list-item-block-2">
                                 <div>{item.name}</div>
                                 <div className="description">{item.description}</div>
-                                <button onClick={() => removeFromCart(item._id)} >Remove From Cart</button>
+                                <button onClick={() => removeFromCart(item._id)}>Remove From Cart</button>
                             </div>
                             <div className="list-item-block-3">Price: {item.price}</div>
                         </div>
@@ -86,7 +79,7 @@ const Page = () => {
                     </div>
                 </div>
                 <div className="block-2">
-                    <button onClick={orderNow} >Order Now</button>
+                    <button onClick={orderNow}>Order Now</button>
                 </div>
             </div>
             <Footer />
