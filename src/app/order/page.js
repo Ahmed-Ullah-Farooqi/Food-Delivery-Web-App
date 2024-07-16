@@ -1,96 +1,82 @@
 'use client'
-import { useEffect, useState } from "react"
-import CustomerHeader from "../_components/CustomerHeader"
-import Footer from "../_components/Footer"
-import { DELIVERY_CHARGES, TAX } from "../lib/constant"
-import { useRouter } from "next/navigation"
-
-
+import { useState, useEffect } from "react";
+import CustomerHeader from "../_components/CustomerHeader";
+import Footer from "../_components/Footer";
+import { DELIVERY_CHARGES, TAX } from "../lib/constant";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
-
-    const [userStorage, setUserStorage] = useState(JSON.parse(localStorage.getItem('user')));
-    const [cartStorage, setCartStorage] = useState(JSON.parse(localStorage.getItem('cart')))
-    const [total] = useState(() => cartStorage?.length == 1 ? cartStorage[0].price : cartStorage?.reduce((a, b) => {
-        return a.price + b.price
-    }))
-
-    const [removeCartData, setRemoveCartData] = useState(false)
-    const router = useRouter()
-
+    const [cartStorage, setCartStorage] = useState([]);
+    const [total, setTotal] = useState(0);
+    const router = useRouter();
 
     useEffect(() => {
-        if (!total) {
-            router.push('/')
+        if (typeof window !== 'undefined') {
+            // Retrieve cart data from local storage
+            const cartData = JSON.parse(localStorage.getItem('cart'));
+            if (cartData) {
+                setCartStorage(cartData);
+                // Calculate total price
+                const calculatedTotal = cartData.length === 1 ? cartData[0].price : cartData.reduce((a, b) => a.price + b.price, 0);
+                setTotal(calculatedTotal);
+            }
         }
-    }, [total])
+    }, []);
 
-    const orderNow = async () => {
-        let user_id = JSON.parse(localStorage.getItem('user'))._id;
-        let city = JSON.parse(localStorage.getItem('user')).city;
+    useEffect(() => {
+        console.log(total);
+    }, [total]);
 
-        let cart = JSON.parse(localStorage.getItem('cart'));
-        let foodItemIds = cart.map((item) => item._id).toString();
-        let deliveryBoyResponse = await fetch('http://localhost:3000/api/deliverypartners/' + city);
-        deliveryBoyResponse = await deliveryBoyResponse.json();
-        let deliveryBoyIds = deliveryBoyResponse.result.map((item) => item._id);
-
-        let deliveryBoy_id = deliveryBoyIds[Math.floor(Math.random() * deliveryBoyIds.length)]
-        console.log(deliveryBoy_id);
-        if (!deliveryBoy_id) {
-            alert("delivery partner not available ")
-            return false;
+    const orderNow = () => {
+        if (typeof window !== 'undefined') {
+            if (JSON.parse(localStorage.getItem('user'))) {
+                router.push('/order');
+            } else {
+                router.push('/user-auth?order=true');
+            }
         }
-
-
-
-        let resto_id = cart[0].resto_id;
-        let collection = {
-            user_id,
-            resto_id,
-            foodItemIds,
-            deliveryBoy_id,
-            status: 'confirm',
-            amount: total + DELIVERY_CHARGES + (total * TAX / 100),
-        }
-
-        let response = await fetch('http://localhost:3000/api/order', {
-            method: 'POST',
-            body: JSON.stringify(collection)
-        });
-        response = await response.json();
-        if (response.success) {
-            alert("order confirmed")
-            setRemoveCartData(true)
-            router.push('myprofile')
-
-        } else {
-            alert("order failed")
-        }
-        console.log(collection);
     }
+
+    const removeFromCart = (id) => {
+        if (typeof window !== 'undefined') {
+            // Remove item from cartStorage
+            const updatedCart = cartStorage.filter(item => item._id !== id);
+            setCartStorage(updatedCart);
+            localStorage.setItem('cart', JSON.stringify(updatedCart));
+
+            // Recalculate total
+            const updatedTotal = updatedCart.length === 1 ? updatedCart[0].price : updatedCart.reduce((a, b) => a.price + b.price, 0);
+            setTotal(updatedTotal);
+        }
+    }
+
     return (
         <div>
-            <CustomerHeader removeCartData={removeCartData} />
+            <CustomerHeader />
+            <div className="food-list-wrapper">
+                {
+                    cartStorage.length > 0 ? cartStorage.map((item) => (
+                        <div key={item._id} className="list-item">
+                            <div className="list-item-block-1"><img style={{ width: 100 }} src={item.img_path} alt={item.name} /></div>
+                            <div className="list-item-block-2">
+                                <div>{item.name}</div>
+                                <div className="description">{item.description}</div>
+                                <button onClick={() => removeFromCart(item._id)} >Remove From Cart</button>
+                            </div>
+                            <div className="list-item-block-3">Price: {item.price}</div>
+                        </div>
+                    )) : <h1>No Food Items for this Restaurant</h1>
+                }
+            </div>
             <div className="total-wrapper">
                 <div className="block-1">
-                    <h2>User Details</h2>
                     <div className="row">
-                        <span>Name </span>
-                        <span>{userStorage.name}</span>
+                        <span>Food Charges : </span>
+                        <span>{total}</span>
                     </div>
-                    <div className="row">
-                        <span>address </span>
-                        <span>{userStorage.address}</span>
-                    </div>
-                    <div className="row">
-                        <span>Mobile </span>
-                        <span>{userStorage.mobile}</span>
-                    </div>
-                    <h2>Amount Details</h2>
                     <div className="row">
                         <span>Tax : </span>
-                        <span>{total * TAX / 100}</span>
+                        <span>{(total * TAX / 100).toFixed(2)}</span>
                     </div>
                     <div className="row">
                         <span>Delivery Charges  : </span>
@@ -98,17 +84,11 @@ const Page = () => {
                     </div>
                     <div className="row">
                         <span>Total Amount : </span>
-                        <span>{total + DELIVERY_CHARGES + (total * TAX / 100)}</span>
+                        <span>{(total + DELIVERY_CHARGES + (total * TAX / 100)).toFixed(2)}</span>
                     </div>
-                    <h2>Payment Methods</h2>
-                    <div className="row">
-                        <span>Cash on Delivery : </span>
-                        <span>{total + DELIVERY_CHARGES + (total * TAX / 100)}</span>
-                    </div>
-
                 </div>
                 <div className="block-2">
-                    <button onClick={orderNow} >Place your Order Now</button>
+                    <button onClick={orderNow} >Order Now</button>
                 </div>
             </div>
             <Footer />
@@ -116,4 +96,4 @@ const Page = () => {
     )
 }
 
-export default Page
+export default Page;
