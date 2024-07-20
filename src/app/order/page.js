@@ -3,7 +3,7 @@ import CustomerHeader from "../_components/CustomerHeader";
 import Footer from "../_components/Footer";
 import { DELIVERY_CHARGES, TAX } from "../lib/constant";
 import { useRouter } from "next/router";
-// here some changes
+
 const Page = () => {
     const [cartStorage, setCartStorage] = useState([]);
     const [total, setTotal] = useState(0);
@@ -22,7 +22,8 @@ const Page = () => {
 
     const orderNow = () => {
         if (typeof window !== 'undefined') {
-            if (JSON.parse(localStorage.getItem('user'))) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
                 router.push('/order');
             } else {
                 router.push('/user-auth?order=true');

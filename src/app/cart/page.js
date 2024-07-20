@@ -11,13 +11,10 @@ const Page = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if we are in the browser
     if (typeof window !== "undefined") {
-      // Retrieve cart data from local storage
       const cartData = JSON.parse(localStorage.getItem("cart")) || [];
       if (cartData.length > 0) {
         setCartStorage(cartData);
-        // Calculate total price
         const calculatedTotal = cartData.reduce(
           (acc, item) => acc + item.price,
           0
@@ -26,10 +23,6 @@ const Page = () => {
       }
     }
   }, []);
-
-  useEffect(() => {
-    console.log(total);
-  }, [total]);
 
   const orderNow = () => {
     if (typeof window !== "undefined") {
@@ -44,12 +37,10 @@ const Page = () => {
 
   const removeFromCart = (id) => {
     if (typeof window !== "undefined") {
-      // Remove item from cartStorage
       const updatedCart = cartStorage.filter((item) => item._id !== id);
       setCartStorage(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
 
-      // Recalculate total
       const updatedTotal = updatedCart.reduce(
         (acc, item) => acc + item.price,
         0
